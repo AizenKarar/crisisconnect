@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { sendEmergencyEmail } from '@/lib/mailer'
 
 export async function GET() {
   try {
@@ -43,8 +44,10 @@ export async function POST(req) {
       },
     })
 
-    // Send notifications to ALL users (simulating area targeting)
-    const users = await prisma.user.findMany({ select: { id: true } })
+    // Fetch users (NOW INCLUDING EMAIL)
+    const users = await prisma.user.findMany({ select: { id: true, email: true } })
+
+    // Create In-App Notifications
     await prisma.notification.createMany({
       data: users.map((u) => ({
         title: `🚨 [${body.targetArea}] ${body.title}`,
@@ -53,6 +56,18 @@ export async function POST(req) {
         userId: u.id,
       })),
     })
+
+    // --- NEW: SEND EMAILS ---
+    const emailSubject = `🚨 EMERGENCY ALERT: ${body.title} in ${body.targetArea}`;
+    const emailText = `An area alert has been issued for ${body.targetArea}.\n\nSeverity: ${body.severity}\nType: ${body.alertType}\n\nMessage:\n${body.message}\n\nStay safe,\nCrisisConnect Team`;
+
+    // Send emails without crashing the app if one fails
+    const emailPromises = users
+      .filter((u) => u.email)
+      .map((u) => sendEmergencyEmail(u.email, emailSubject, emailText));
+
+    await Promise.allSettled(emailPromises);
+    // ------------------------
 
     // Update recipient count
     await prisma.areaAlert.update({
@@ -64,7 +79,7 @@ export async function POST(req) {
     await prisma.auditLog.create({
       data: {
         action: 'AREA_ALERT_SENT',
-        details: `Area alert "${body.title}" sent to ${body.targetArea}. ${users.length} recipients notified.`,
+        details: `Area alert "${body.title}" sent to ${body.targetArea}. ${users.length} recipients notified via app and email.`,
         userId: session.user.id,
       },
     })

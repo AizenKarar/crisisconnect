@@ -1,8 +1,9 @@
-// src/app/api/weather-alerts/route.js
+
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { sendEmergencyEmail } from '@/lib/mailer'
 
 export async function GET() {
   try {
@@ -36,6 +37,18 @@ export async function POST(req) {
         createdById: session.user.id,
       },
     })
+
+    // --- NEW: SEND EMAILS ---
+    const users = await prisma.user.findMany({ select: { email: true } })
+    const emailSubject = `⛈️ WEATHER WARNING: ${body.title} (${body.region})`;
+    const emailText = `A severe weather alert has been issued for ${body.region}.\n\nSeverity: ${body.severity}\nType: ${body.alertType}\n\nDetails:\n${body.description}\n\nValid until: ${new Date(body.expiresAt).toLocaleString()}\n\nStay safe,\nCrisisConnect Team`;
+
+    const emailPromises = users
+      .filter((u) => u.email)
+      .map((u) => sendEmergencyEmail(u.email, emailSubject, emailText));
+
+    await Promise.allSettled(emailPromises);
+
     return NextResponse.json(alert, { status: 201 })
   } catch (error) {
     return NextResponse.json({ error: 'Failed to create alert' }, { status: 500 })
