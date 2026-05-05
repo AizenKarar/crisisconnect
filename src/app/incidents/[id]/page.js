@@ -1,58 +1,55 @@
-// src/app/incidents/[id]/page.js
 'use client'
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useParams } from 'next/navigation'
 import DashboardLayout from '@/components/DashboardLayout'
-import { getSeverityColor, getStatusColor, getDisasterIcon, formatDate } from '@/lib/utils'
+import { getSeverityColor, getStatusColor, getDisasterIcon, formatDate, reverseGeocode } from '@/lib/utils'
 import toast from 'react-hot-toast'
 
 export default function IncidentDetailPage() {
-  // Get the incident ID from the URL
   const { id } = useParams()
-  // Get the logged-in user session
   const { data: session } = useSession()
 
-  // State variables
   const [incident, setIncident] = useState(null)
   const [messages, setMessages] = useState([])
   const [newMessage, setNewMessage] = useState('')
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState('details')
+  const [displayAddress, setDisplayAddress] = useState('Fetching area...')
 
-  // Get user role safely
   let role = ''
   if (session && session.user) {
     role = session.user.role
   }
 
-  // Get current user ID safely
   let currentUserId = ''
   if (session && session.user) {
     currentUserId = session.user.id
   }
 
-  // Fetch data when the page loads
   useEffect(function () {
     fetchIncident()
     fetchMessages()
   }, [id])
 
-  // Fetch the incident details from the API
   async function fetchIncident() {
     try {
       const response = await fetch('/api/incidents/' + id)
       if (response.ok) {
         const data = await response.json()
         setIncident(data)
+        if (!data.address || data.address === 'Unknown') {
+          const locName = await reverseGeocode(data.latitude, data.longitude)
+          setDisplayAddress(locName)
+        } else {
+          setDisplayAddress(data.address)
+        }
       }
     } catch (error) {
-      console.error('Error fetching incident:', error)
     }
     setLoading(false)
   }
 
-  // Fetch chat messages for this incident
   async function fetchMessages() {
     try {
       const response = await fetch('/api/incidents/' + id + '/messages')
@@ -61,11 +58,9 @@ export default function IncidentDetailPage() {
         setMessages(data)
       }
     } catch (error) {
-      console.error('Error fetching messages:', error)
     }
   }
 
-  // Update the incident status
   async function updateStatus(newStatus) {
     try {
       const response = await fetch('/api/incidents/' + id + '/status', {
@@ -78,15 +73,12 @@ export default function IncidentDetailPage() {
         fetchIncident()
       }
     } catch (error) {
-      console.error('Error updating status:', error)
     }
   }
 
-  // Send a new chat message
   async function sendMessage(event) {
     event.preventDefault()
 
-    // Don't send empty messages
     if (newMessage.trim() === '') {
       return
     }
@@ -102,11 +94,9 @@ export default function IncidentDetailPage() {
         fetchMessages()
       }
     } catch (error) {
-      console.error('Error sending message:', error)
     }
   }
 
-  // Show loading spinner
   if (loading) {
     return (
       <DashboardLayout>
@@ -117,7 +107,6 @@ export default function IncidentDetailPage() {
     )
   }
 
-  // Show error if incident was not found
   if (!incident) {
     return (
       <DashboardLayout>
@@ -126,17 +115,13 @@ export default function IncidentDetailPage() {
     )
   }
 
-  // Status workflow steps
   const statusFlow = ['PENDING', 'VERIFIED', 'IN_PROGRESS', 'RESOLVED']
 
-  // Check if user can change the status
   let canChangeStatus = false
   if (role === 'STAFF' || role === 'ADMIN') {
     canChangeStatus = true
   }
 
-  // Get reporter info safely
-  let incidentAddress = incident.address || 'Unknown'
   let reporterText = ''
   if (incident.reporter && !incident.isAnonymous) {
     reporterText = ' by ' + incident.reporter.name
@@ -145,13 +130,11 @@ export default function IncidentDetailPage() {
     reporterText = ' (Anonymous)'
   }
 
-  // Get message count safely
   let messageCount = 0
   if (incident._count && incident._count.messages) {
     messageCount = incident._count.messages
   }
 
-  // Get audit logs safely
   let auditLogs = []
   if (incident.auditLogs) {
     auditLogs = incident.auditLogs
@@ -160,12 +143,11 @@ export default function IncidentDetailPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6 max-w-5xl">
-        {/* Header */}
         <div className="flex items-start gap-4">
           <span className="text-4xl">{getDisasterIcon(incident.type)}</span>
           <div className="flex-1">
             <h1 className="font-display font-bold text-2xl text-slate-800">{incident.title}</h1>
-            <p className="text-slate-500 text-sm mt-1">{incidentAddress} · Reported {formatDate(incident.createdAt)}{reporterText}</p>
+            <p className="text-slate-500 text-sm mt-1">{displayAddress} · Reported {formatDate(incident.createdAt)}{reporterText}</p>
           </div>
           <div className="flex gap-2">
             <span className={'badge ' + getSeverityColor(incident.severity)}>{incident.severity}</span>
@@ -173,7 +155,6 @@ export default function IncidentDetailPage() {
           </div>
         </div>
 
-        {/* Status workflow (only for staff/admin) */}
         {canChangeStatus && (
           <div className="card">
             <h3 className="text-sm font-semibold text-slate-500 mb-4">Verification Workflow</h3>
@@ -202,7 +183,6 @@ export default function IncidentDetailPage() {
           </div>
         )}
 
-        {/* Tab buttons */}
         <div className="flex gap-1 border-b border-teal-100 pb-0">
           {['details', 'chat', 'audit'].map(function (tabName) {
             let isActive = tab === tabName
@@ -223,7 +203,6 @@ export default function IncidentDetailPage() {
           })}
         </div>
 
-        {/* Details tab */}
         {tab === 'details' && (
           <div className="card space-y-4">
             <div>
@@ -244,12 +223,12 @@ export default function IncidentDetailPage() {
               <div>
                 <h3 className="text-sm font-semibold text-slate-500 mb-1">Coordinates</h3>
                 <p className="text-slate-700 font-mono text-sm">{incident.latitude.toFixed(4)}, {incident.longitude.toFixed(4)}</p>
+                <p className="text-slate-600 text-xs mt-1">{displayAddress}</p>
               </div>
             </div>
           </div>
         )}
 
-        {/* Chat tab */}
         {tab === 'chat' && (
           <div className="card">
             <div className="h-80 overflow-y-auto space-y-3 mb-4">
@@ -281,7 +260,6 @@ export default function IncidentDetailPage() {
           </div>
         )}
 
-        {/* Audit log tab */}
         {tab === 'audit' && (
           <div className="card">
             <h3 className="font-display font-semibold text-slate-800 mb-4">Activity Log</h3>

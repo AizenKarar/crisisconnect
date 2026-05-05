@@ -1,4 +1,3 @@
-// src/components/SOSButton.js
 'use client'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
@@ -32,10 +31,28 @@ export default function SOSButton() {
           maximumAge: 0,
         })
       })
+
+      const lat = position.coords.latitude
+      const lon = position.coords.longitude
+      let address = ''
+
+      try {
+        const locRes = await fetch('/api/location', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lat, lon })
+        })
+        if (locRes.ok) {
+          const locData = await locRes.json()
+          address = locData.display_name || ''
+        }
+      } catch (e) {
+      }
+
       const res = await fetch('/api/sos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ latitude: position.coords.latitude, longitude: position.coords.longitude, message: 'Emergency SOS broadcast' }),
+        body: JSON.stringify({ latitude: lat, longitude: lon, address: address, message: 'Emergency SOS broadcast' }),
       })
       if (res.ok) toast.success('SOS broadcast sent! Help is on the way.')
       else toast.error('Failed to send SOS')

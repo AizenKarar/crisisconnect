@@ -12,6 +12,8 @@ var mainNav = [
   { label: 'Incidents', href: '/incidents' },
   { label: 'Report', href: '/incidents/report' },
   { label: 'Missing', href: '/missing' },
+  { label: 'Blood Registry', href: '/blood-registry' },
+  { label: 'Lost & Found', href: '/lost-found' },
   { label: 'Shelters', href: '/shelters' },
   { label: 'Donations', href: '/donations' },
   { label: 'Contacts', href: '/contacts' },
@@ -28,7 +30,7 @@ var roleNav = [
   { label: 'Broadcast', href: '/admin/broadcast', roles: ['ADMIN'] },
 ]
 
-// Mobile: combined list with icons
+
 var mobileNav = [
   { label: 'Dashboard', href: '/dashboard', icon: '📊' },
   { label: 'Live Map', href: '/map', icon: '🗺️' },
@@ -55,7 +57,7 @@ export default function Sidebar() {
   var sessionData = useSession()
   var session = sessionData.data
 
-  // State for mobile menu
+
   var [mobileOpen, setMobileOpen] = useState(false)
 
   // Get user role safely

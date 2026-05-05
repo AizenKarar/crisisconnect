@@ -1,12 +1,15 @@
-// src/app/api/incidents/route.js
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 
-// GET all incidents (with filters)
 export async function GET(request) {
   try {
+    const session = await getServerSession(authOptions)
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const { searchParams } = new URL(request.url)
     const type = searchParams.get('type')
     const severity = searchParams.get('severity')
@@ -16,6 +19,10 @@ export async function GET(request) {
     if (type) where.type = type
     if (severity) where.severity = severity
     if (status) where.status = status
+
+    if (session.user.role !== 'ADMIN' && session.user.role !== 'STAFF') {
+      where.reporterId = session.user.id
+    }
 
     const incidents = await prisma.incident.findMany({
       where,
@@ -32,7 +39,6 @@ export async function GET(request) {
   }
 }
 
-// POST new incident
 export async function POST(request) {
   try {
     const session = await getServerSession(authOptions)
@@ -55,7 +61,6 @@ export async function POST(request) {
       },
     })
 
-    // Create audit log
     await prisma.auditLog.create({
       data: {
         action: 'INCIDENT_CREATED',
