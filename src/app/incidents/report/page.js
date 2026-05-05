@@ -113,13 +113,41 @@ export default function ReportIncidentPage() {
     if (!file) {
       return
     }
-    toast.success('Photo "' + file.name + '" attached')
-    updateField('imageUrl', URL.createObjectURL(file))
+    const reader = new FileReader()
+    reader.readAsDataURL(file)
+    reader.onloadend = function () {
+      updateField('imageUrl', reader.result)
+      toast.success('Photo "' + file.name + '" attached and ready for upload')
+    }
   }
 
   async function handleSubmit(event) {
     event.preventDefault()
     setLoading(true)
+
+    let finalCloudinaryUrl = null;
+
+    if (form.imageUrl && form.imageUrl.startsWith('data:image')) {
+      toast.loading('Uploading photo to secure server...', { id: 'uploadToast' })
+      try {
+        const uploadRes = await fetch('/api/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imageBase64: form.imageUrl }),
+        })
+
+        if (uploadRes.ok) {
+          const uploadData = await uploadRes.json()
+          finalCloudinaryUrl = uploadData.url
+          toast.success('Photo uploaded successfully!', { id: 'uploadToast' })
+        } else {
+          toast.error('Photo upload failed. Submitting text only.', { id: 'uploadToast' })
+        }
+      } catch (error) {
+        console.error('Upload error:', error)
+        toast.error('Photo upload error. Submitting text only.', { id: 'uploadToast' })
+      }
+    }
 
     let endpoint = '/api/incidents'
     if (form.anonymous) {
@@ -134,7 +162,7 @@ export default function ReportIncidentPage() {
       latitude: form.latitude,
       longitude: form.longitude,
       address: form.address,
-      imageUrl: form.imageUrl || null,
+      imageUrl: finalCloudinaryUrl,
     }
 
     try {
