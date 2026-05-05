@@ -1,4 +1,3 @@
-// src/app/api/notifications/broadcast/route.js
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
@@ -7,20 +6,24 @@ import { authOptions } from '@/lib/auth'
 export async function POST(request) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session || session.user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Admin only' }, { status: 403 })
+
+    if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'STAFF')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
     const { title, message } = await request.json()
 
-    // Send to ALL users
+    if (!title || !message) {
+      return NextResponse.json({ error: 'Title and message required' }, { status: 400 })
+    }
+
     const users = await prisma.user.findMany({ select: { id: true } })
 
     await prisma.notification.createMany({
       data: users.map((u) => ({
         title: `🚨 ${title}`,
-        message,
-        type: 'ALERT',
+        message: message,
+        type: 'BROADCAST',
         userId: u.id,
       })),
     })
@@ -28,13 +31,14 @@ export async function POST(request) {
     await prisma.auditLog.create({
       data: {
         action: 'MASS_BROADCAST',
-        details: `Admin broadcast: ${title}`,
+        details: `Global Dashboard Banner Broadcast: "${title}" sent to ${users.length} users.`,
         userId: session.user.id,
       },
     })
 
-    return NextResponse.json({ success: true, count: users.length })
+    return NextResponse.json({ success: true, totalUsers: users.length })
+
   } catch (error) {
-    return NextResponse.json({ error: 'Broadcast failed' }, { status: 500 })
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
