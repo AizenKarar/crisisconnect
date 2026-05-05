@@ -1,4 +1,3 @@
-// prisma/schema.prisma
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,8 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ===== AUTH MODELS =====
-
 model User {
   id          String   @id @default(cuid())
   name        String
@@ -18,7 +15,7 @@ model User {
   image       String?
   role        Role     @default(CITIZEN)
   phone       String?
-  skills      String? // comma-separated: "Nurse,Driver,Cook"
+  skills      String?
   isVerified  Boolean  @default(false)
   karmaPoints Int      @default(0)
   createdAt   DateTime @default(now())
@@ -27,7 +24,6 @@ model User {
   bio     String? @db.Text
   address String?
 
-  // Relations
   incidents      Incident[]
   responses      IncidentResponse[]
   messages       Message[]
@@ -51,32 +47,28 @@ enum Role {
   ADMIN
 }
 
-// ===== INCIDENT MODELS =====
-
 model Incident {
-  id          String         @id @default(cuid())
+  id          String             @id @default(cuid())
   title       String
-  description String         @db.Text
+  description String             @db.Text
   type        DisasterType
   severity    Severity
-  status      IncidentStatus @default(PENDING)
+  status      IncidentStatus     @default(PENDING)
   latitude    Float
   longitude   Float
   areaName    String?
   address     String?
   imageUrl    String?
-  isAnonymous Boolean        @default(false)
+  isAnonymous Boolean            @default(false)
   reporterIp  String?
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-
-  // Relations
-  reporterId String?
-  reporter   User?              @relation(fields: [reporterId], references: [id])
-  responses  IncidentResponse[]
-  messages   Message[]
-  auditLogs  AuditLog[]
-  tasks      Task[]
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  reporterId  String?
+  reporter    User?              @relation(fields: [reporterId], references: [id])
+  responses   IncidentResponse[]
+  messages    Message[]
+  auditLogs   AuditLog[]
+  tasks       Task[]
 }
 
 enum DisasterType {
@@ -104,8 +96,6 @@ enum IncidentStatus {
   REJECTED
 }
 
-// ===== RESPONSE & AUDIT =====
-
 model IncidentResponse {
   id        String   @id @default(cuid())
   message   String   @db.Text
@@ -119,7 +109,7 @@ model IncidentResponse {
 
 model AuditLog {
   id        String   @id @default(cuid())
-  action    String // e.g., "STATUS_CHANGED", "VERIFIED", "ASSIGNED"
+  action    String
   details   String?  @db.Text
   createdAt DateTime @default(now())
 
@@ -128,8 +118,6 @@ model AuditLog {
   userId     String?
   user       User?     @relation(fields: [userId], references: [id])
 }
-
-// ===== CHAT / MESSAGING =====
 
 model Message {
   id        String   @id @default(cuid())
@@ -142,21 +130,17 @@ model Message {
   user       User     @relation(fields: [userId], references: [id])
 }
 
-// ===== NOTIFICATIONS =====
-
 model Notification {
   id        String   @id @default(cuid())
   title     String
   message   String
-  type      String   @default("INFO") // INFO, SOS, ALERT, RESUPPLY
+  type      String   @default("INFO")
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
 
   userId String
   user   User   @relation(fields: [userId], references: [id])
 }
-
-// ===== RESOURCE MANAGEMENT =====
 
 model Shelter {
   id          String   @id @default(cuid())
@@ -166,7 +150,7 @@ model Shelter {
   longitude   Float
   maxCapacity Int
   occupied    Int      @default(0)
-  status      String   @default("OPEN") // OPEN, FULL, CLOSED
+  status      String   @default("OPEN")
   phone       String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -178,11 +162,11 @@ model Shelter {
 
 model Supply {
   id        String         @id @default(cuid())
-  name      String // "Water", "Food Packs", "Medicine"
+  name      String
   category  SupplyCategory
   quantity  Int
-  unit      String // "liters", "packs", "boxes"
-  minLevel  Int            @default(10) // threshold for alert
+  unit      String
+  minLevel  Int            @default(10)
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
 
@@ -199,8 +183,6 @@ enum SupplyCategory {
   OTHER
 }
 
-// ===== MISSING PERSONS =====
-
 model MissingPerson {
   id            String   @id @default(cuid())
   name          String
@@ -212,7 +194,7 @@ model MissingPerson {
   imageUrl      String?
   contactPhone  String
   contactName   String
-  status        String   @default("MISSING") // MISSING, FOUND, CLOSED
+  status        String   @default("MISSING")
   latitude      Float?
   longitude     Float?
   createdAt     DateTime @default(now())
@@ -222,20 +204,18 @@ model MissingPerson {
   reporter   User?   @relation(fields: [reporterId], references: [id])
 }
 
-// ===== DONATIONS =====
-
 model Donation {
   id         String   @id @default(cuid())
   donorName  String
   donorEmail String?
   donorPhone String?
-  type       String // MONEY, FOOD, CLOTHING, MEDICINE, EQUIPMENT, OTHER
-  amount     Float? // for money donations
-  itemName   String? // for non-money donations
+  type       String
+  amount     Float?
+  itemName   String?
   quantity   Int?
   unit       String?
   message    String?
-  status     String   @default("PLEDGED") // PLEDGED, RECEIVED, DISTRIBUTED
+  status     String   @default("PLEDGED")
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -243,12 +223,10 @@ model Donation {
   user   User?   @relation(fields: [userId], references: [id])
 }
 
-// ===== EMERGENCY CONTACTS =====
-
 model EmergencyContact {
   id             String   @id @default(cuid())
   name           String
-  category       String // HOSPITAL, FIRE_STATION, POLICE, AMBULANCE, UTILITY, NGO, OTHER
+  category       String
   phone          String
   altPhone       String?
   email          String?
@@ -262,13 +240,11 @@ model EmergencyContact {
   updatedAt      DateTime @updatedAt
 }
 
-// ===== COMMUNITY BOARD =====
-
 model CommunityPost {
   id        String   @id @default(cuid())
   title     String
   content   String   @db.Text
-  category  String // UPDATE, REQUEST, OFFER, QUESTION, ALERT, GRATITUDE
+  category  String
   isPinned  Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -289,15 +265,13 @@ model PostComment {
   author   User          @relation(fields: [authorId], references: [id])
 }
 
-// ===== TASK MANAGEMENT =====
-
 model Task {
   id          String    @id @default(cuid())
   title       String
   description String    @db.Text
-  priority    String    @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
-  status      String    @default("TODO") // TODO, IN_PROGRESS, DONE, CANCELLED
-  category    String // RESCUE, LOGISTICS, MEDICAL, REPAIR, CLEANUP, PATROL, OTHER
+  priority    String    @default("MEDIUM")
+  status      String    @default("TODO")
+  category    String
   dueDate     DateTime?
   location    String?
   notes       String?   @db.Text
@@ -312,16 +286,14 @@ model Task {
   incident    Incident? @relation(fields: [incidentId], references: [id], onDelete: SetNull)
 }
 
-// ===== SUPPLY REQUESTS =====
-
 model SupplyRequest {
   id        String         @id @default(cuid())
   itemName  String
   category  SupplyCategory
   quantity  Int
   unit      String
-  urgency   String         @default("MEDIUM") // LOW, MEDIUM, HIGH, CRITICAL
-  status    String         @default("PENDING") // PENDING, APPROVED, IN_TRANSIT, DELIVERED, REJECTED
+  urgency   String         @default("MEDIUM")
+  status    String         @default("PENDING")
   reason    String         @db.Text
   notes     String?        @db.Text
   createdAt DateTime       @default(now())
@@ -337,18 +309,16 @@ model SupplyRequest {
   approvedBy    User?   @relation("SupplyApprover", fields: [approvedById], references: [id])
 }
 
-// ===== AREA ALERTS (ADMIN) =====
-
 model AreaAlert {
   id             String    @id @default(cuid())
   title          String
   message        String    @db.Text
-  alertType      String    @default("EMERGENCY") // EMERGENCY, EVACUATION, WARNING, INFO, ALL_CLEAR
-  severity       String    @default("HIGH") // LOW, MEDIUM, HIGH, CRITICAL
-  targetArea     String // e.g., "Mirpur", "Old Dhaka", "Uttara"
+  alertType      String    @default("EMERGENCY")
+  severity       String    @default("HIGH")
+  targetArea     String
   latitude       Float?
   longitude      Float?
-  radiusKm       Float? // affected radius
+  radiusKm       Float?
   isActive       Boolean   @default(true)
   expiresAt      DateTime?
   recipientCount Int       @default(0)
@@ -359,7 +329,6 @@ model AreaAlert {
   createdBy   User   @relation(fields: [createdById], references: [id])
 }
 
-// ===== BLOOD REGISTRY =====
 model BloodRegistry {
   id          String   @id @default(cuid())
   donorName   String
@@ -371,7 +340,6 @@ model BloodRegistry {
   updatedAt   DateTime @updatedAt
 }
 
-// ===== LOST & FOUND =====
 model LostFoundItem {
   id           String   @id @default(cuid())
   itemName     String
@@ -383,4 +351,14 @@ model LostFoundItem {
   status       String   @default("ACTIVE")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+}
+
+model Feedback {
+  id        String   @id @default(cuid())
+  userName  String?
+  userEmail String?
+  type      String   @default("GENERAL")
+  message   String   @db.Text
+  status    String   @default("UNREAD")
+  createdAt DateTime @default(now())
 }

@@ -20,8 +20,12 @@ export async function GET(request) {
     if (severity) where.severity = severity
     if (status) where.status = status
 
+    // THE FIX: Normal users see all incidents EXCEPT other people's SOS broadcasts.
     if (session.user.role !== 'ADMIN' && session.user.role !== 'STAFF') {
-      where.reporterId = session.user.id
+      where.OR = [
+        { NOT: { title: { startsWith: '🆘 SOS' } } },
+        { reporterId: session.user.id }
+      ]
     }
 
     const incidents = await prisma.incident.findMany({

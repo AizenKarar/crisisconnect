@@ -18,6 +18,7 @@ var mainNav = [
   { label: 'Donations', href: '/donations' },
   { label: 'Contacts', href: '/contacts' },
   { label: 'Community', href: '/community' },
+  { label: 'Feedback', href: '/feedback' },
   { label: 'Profile', href: '/profile' },
 ]
 

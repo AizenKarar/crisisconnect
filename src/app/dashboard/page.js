@@ -4,40 +4,35 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import DashboardLayout from '@/components/DashboardLayout'
 import Link from 'next/link'
+import WeatherWidget from '@/components/WeatherWidget'
 import { getSeverityColor, getStatusColor, getDisasterIcon, formatDate } from '@/lib/utils'
 
 export default function DashboardPage() {
-  // Get the current logged-in user session
   const { data: session } = useSession()
 
-  // State variables to store data from API
   const [incidents, setIncidents] = useState([])
   const [shelters, setShelters] = useState([])
   const [leaderboard, setLeaderboard] = useState([])
   const [loading, setLoading] = useState(true)
 
-  // Fetch all dashboard data when page loads
   useEffect(function () {
     fetchAllData()
   }, [])
 
   async function fetchAllData() {
     try {
-      // Fetch incidents
       const incidentResponse = await fetch('/api/incidents')
       if (incidentResponse.ok) {
         const incidentData = await incidentResponse.json()
         setIncidents(incidentData)
       }
 
-      // Fetch shelters
       const shelterResponse = await fetch('/api/shelters')
       if (shelterResponse.ok) {
         const shelterData = await shelterResponse.json()
         setShelters(shelterData)
       }
 
-      // Fetch leaderboard
       const leaderboardResponse = await fetch('/api/users/leaderboard')
       if (leaderboardResponse.ok) {
         const leaderboardData = await leaderboardResponse.json()
@@ -50,7 +45,6 @@ export default function DashboardPage() {
     setLoading(false)
   }
 
-  // Calculate stats from incidents
   let totalIncidents = incidents.length
   let criticalCount = 0
   let inProgressCount = 0
@@ -68,7 +62,6 @@ export default function DashboardPage() {
     }
   }
 
-  // Get user info safely (without optional chaining)
   let userName = ''
   let userRole = ''
   let userInitial = ''
@@ -80,7 +73,6 @@ export default function DashboardPage() {
     }
   }
 
-  // Show loading spinner while data is being fetched
   if (loading) {
     return (
       <DashboardLayout>
@@ -91,14 +83,16 @@ export default function DashboardPage() {
     )
   }
 
-  // Get first 5 incidents for the list
   const recentIncidents = incidents.slice(0, 5)
-  // Get top 5 volunteers for leaderboard
   const topVolunteers = leaderboard.slice(0, 5)
 
   return (
     <DashboardLayout>
       <div className="space-y-8">
+
+        {/* Added Weather Widget Here */}
+        <WeatherWidget />
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 card">
             <h2 className="font-display font-semibold text-slate-800 mb-5">Incident Overview</h2>
