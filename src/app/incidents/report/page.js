@@ -32,7 +32,7 @@ export default function ReportIncidentPage() {
     }))
   }
 
-  // Updated Location Logic with LocationIQ integration
+  //LocationIQ 
   async function getLocation() {
     setGettingLocation(true)
 
@@ -63,7 +63,7 @@ export default function ReportIncidentPage() {
       updateField('latitude', lat)
       updateField('longitude', lon)
 
-      // Auto-fill address using the LocationIQ route API
+      // Auto-fill
       try {
         const response = await fetch('/api/location', {
           method: 'POST',
