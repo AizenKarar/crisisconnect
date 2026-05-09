@@ -1,30 +1,22 @@
-// src/components/NotificationBell.js
+
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { formatDate } from '@/lib/utils'
 
 export default function NotificationBell() {
-  // State variables
+
   const [notifications, setNotifications] = useState([])
   const [open, setOpen] = useState(false)
-
-  // Ref for detecting clicks outside the dropdown
   const dropdownRef = useRef(null)
 
-  // Fetch notifications when the component loads, and refresh every 30 seconds
+  //every 30 seconds
   useEffect(function () {
     fetchNotifications()
-
-    // Set up a timer to refresh notifications every 30 seconds
     var interval = setInterval(fetchNotifications, 30000)
-
-    // Clean up the timer when the component unmounts
     return function () {
       clearInterval(interval)
     }
   }, [])
-
-  // Close the dropdown when clicking outside of it
   useEffect(function () {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -34,13 +26,11 @@ export default function NotificationBell() {
 
     document.addEventListener('mousedown', handleClickOutside)
 
-    // Clean up the event listener when the component unmounts
     return function () {
       document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [])
 
-  // Fetch notifications from the API
   async function fetchNotifications() {
     try {
       var response = await fetch('/api/notifications')
@@ -49,11 +39,10 @@ export default function NotificationBell() {
         setNotifications(data)
       }
     } catch (error) {
-      // Silently fail - notifications are not critical
     }
   }
 
-  // Mark all notifications as read
+
   async function markAllRead() {
     try {
       await fetch('/api/notifications', {
@@ -67,12 +56,11 @@ export default function NotificationBell() {
     }
   }
 
-  // Toggle the dropdown open/closed
   function toggleDropdown() {
     setOpen(!open)
   }
 
-  // Count unread notifications
+  // Count unread 
   var unreadCount = 0
   for (var i = 0; i < notifications.length; i++) {
     if (!notifications[i].isRead) {

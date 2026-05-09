@@ -1,4 +1,4 @@
-// src/lib/utils.js
+
 
 export function getSeverityColor(severity) {
   const colors = {

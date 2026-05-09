@@ -20,7 +20,7 @@ export default function MapView({ incidents, shelters, onMarkerClick }) {
   const severities = ['ALL', 'CRITICAL', 'HIGH', 'MEDIUM', 'LOW']
 
   useEffect(function () {
-    // Track if the component is still alive
+    // Trackstill alive
     let isMounted = true
 
     if (mapInstance.current) {
@@ -32,7 +32,6 @@ export default function MapView({ incidents, shelters, onMarkerClick }) {
       var L = leafletModule.default
       await import('leaflet/dist/leaflet.css')
 
-      // PROPER FIX: Stop if unmounted during download, or if map is already bound to this div
       if (!isMounted || (mapRef.current && mapRef.current._leaflet_id)) {
         return
       }
@@ -78,7 +77,7 @@ export default function MapView({ incidents, shelters, onMarkerClick }) {
     loadMap()
 
     return function () {
-      isMounted = false // Mark as unmounted
+      isMounted = false
       if (mapInstance.current && mapInstance.current.map) {
         mapInstance.current.map.remove()
         mapInstance.current = null

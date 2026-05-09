@@ -1,11 +1,11 @@
-// src/components/Sidebar.js
+
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import { useState } from 'react'
 
-// Row 1: Main navigation (all users)
+//all users
 var mainNav = [
   { label: 'Dashboard', href: '/dashboard' },
   { label: 'Live Map', href: '/map' },
@@ -22,7 +22,7 @@ var mainNav = [
   { label: 'Profile', href: '/profile' },
 ]
 
-// Row 2: Role-specific items
+// Role-specific items
 var roleNav = [
   { label: 'Tasks', href: '/tasks', roles: ['VOLUNTEER', 'STAFF', 'ADMIN'] },
   { label: 'Supply Requests', href: '/supply-requests', roles: ['STAFF', 'ADMIN'] },
@@ -51,23 +51,19 @@ var mobileNav = [
 ]
 
 export default function Sidebar() {
-  // Get the current page URL path
   var pathname = usePathname()
 
-  // Get the logged-in user session
+  //logged-in user session
   var sessionData = useSession()
   var session = sessionData.data
 
-
   var [mobileOpen, setMobileOpen] = useState(false)
 
-  // Get user role safely
   var userRole = 'CITIZEN'
   if (session && session.user && session.user.role) {
     userRole = session.user.role
   }
 
-  // Get user name safely
   var userName = ''
   var userInitial = '?'
   if (session && session.user) {
@@ -77,50 +73,41 @@ export default function Sidebar() {
     }
   }
 
-  // Filter role nav items based on user role
   var filteredRoleNav = []
   for (var i = 0; i < roleNav.length; i++) {
     if (roleNav[i].roles.includes(userRole)) {
       filteredRoleNav.push(roleNav[i])
     }
   }
-
-  // Filter mobile nav items based on user role
   var filteredMobileNav = []
   for (var i = 0; i < mobileNav.length; i++) {
     var item = mobileNav[i]
-    // Items without roles are shown to everyone
     if (!item.roles || item.roles.includes(userRole)) {
       filteredMobileNav.push(item)
     }
   }
 
-  // Check if second row should be shown
   var hasSecondRow = filteredRoleNav.length > 0
 
-  // Check if a link is the current active page
   function isActive(href) {
     return pathname === href || pathname.startsWith(href + '/')
   }
 
-  // Handle sign out
+  // sign out
   function handleSignOut() {
     signOut({ callbackUrl: '/' })
   }
 
-  // Toggle mobile menu
   function toggleMobile() {
     setMobileOpen(!mobileOpen)
   }
 
-  // Close mobile menu (when a link is clicked)
   function closeMobile() {
     setMobileOpen(false)
   }
 
   return (
     <header className="fixed top-0 left-0 right-0 z-40">
-      {/* Row 1: Logo + Main Nav + User */}
       <div className="glass border-b border-white/40 shadow-sm shadow-teal-100/30">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-14">
@@ -136,7 +123,7 @@ export default function Sidebar() {
               </div>
             </Link>
 
-            {/* Desktop Main Nav */}
+
             <nav className="hidden lg:flex items-center gap-0.5 flex-1 justify-center">
               {mainNav.map(function (navItem) {
                 var linkStyle = 'text-slate-500 hover:text-teal-700 hover:bg-white/50'
@@ -151,8 +138,6 @@ export default function Sidebar() {
                 )
               })}
             </nav>
-
-            {/* Right side */}
             <div className="flex items-center gap-3 flex-shrink-0">
               {session && session.user && (
                 <div className="hidden sm:flex items-center gap-2.5">
@@ -179,8 +164,6 @@ export default function Sidebar() {
           </div>
         </div>
       </div>
-
-      {/* Row 2: Role-specific nav */}
       {hasSecondRow && (
         <div className="hidden lg:block bg-white/40 backdrop-blur-lg border-b border-white/30">
           <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
@@ -203,7 +186,7 @@ export default function Sidebar() {
         </div>
       )}
 
-      {/* Mobile dropdown */}
+
       {mobileOpen && (
         <div className="lg:hidden border-t border-white/40 bg-white/90 backdrop-blur-xl animate-slide-down max-h-[80vh] overflow-y-auto">
           <nav className="px-4 py-3 space-y-1">
