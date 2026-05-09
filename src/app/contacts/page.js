@@ -1,26 +1,24 @@
-// src/app/contacts/page.js
+
 'use client'
 import { useState, useEffect } from 'react'
 import DashboardLayout from '@/components/DashboardLayout'
 
-// Icon map for each contact category
+
 const CAT_ICONS = { HOSPITAL: '🏥', FIRE_STATION: '🚒', POLICE: '👮', AMBULANCE: '🚑', UTILITY: '⚡', NGO: '🤝', OTHER: '📞' }
-// Category filter options
 const CATEGORIES = ['ALL', 'HOSPITAL', 'FIRE_STATION', 'POLICE', 'AMBULANCE', 'UTILITY', 'NGO']
 
 export default function ContactsPage() {
-  // State variables
+
   const [contacts, setContacts] = useState([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('ALL')
   const [search, setSearch] = useState('')
 
-  // Fetch contacts when page loads
+
   useEffect(function () {
     fetchContacts()
   }, [])
 
-  // Fetch all contacts from the API
   async function fetchContacts() {
     try {
       const response = await fetch('/api/contacts')
@@ -34,12 +32,10 @@ export default function ContactsPage() {
     setLoading(false)
   }
 
-  // Filter contacts by category and search text
+
   let filtered = []
   for (let i = 0; i < contacts.length; i++) {
     let contact = contacts[i]
-
-    // Check category filter
     let matchesFilter = false
     if (filter === 'ALL') {
       matchesFilter = true
@@ -47,7 +43,6 @@ export default function ContactsPage() {
       matchesFilter = true
     }
 
-    // Check search text
     let matchesSearch = true
     if (search !== '') {
       let searchLower = search.toLowerCase()
@@ -61,7 +56,6 @@ export default function ContactsPage() {
     }
   }
 
-  // Quick dial numbers data
   let quickDial = [
     { label: 'National Emergency', num: '999', icon: '🆘', color: 'bg-red-500' },
     { label: 'Ambulance', num: '199', icon: '🚑', color: 'bg-blue-500' },
@@ -79,7 +73,7 @@ export default function ContactsPage() {
           <p className="text-slate-500 text-sm mt-1">Directory of hospitals, fire stations, police, and emergency services.</p>
         </div>
 
-        {/* Quick dial */}
+
         <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
           {quickDial.map(function (item) {
             return (
@@ -92,7 +86,7 @@ export default function ContactsPage() {
           })}
         </div>
 
-        {/* Search + filter */}
+
         <div className="flex flex-wrap items-center gap-3">
           <input value={search} onChange={function (e) { setSearch(e.target.value) }} className="input max-w-xs" placeholder="🔍 Search contacts..." />
           <div className="flex gap-1">
@@ -122,7 +116,7 @@ export default function ContactsPage() {
           </div>
         </div>
 
-        {/* Contact list */}
+
         {loading ? (
           <div className="flex justify-center py-12">
             <div className="w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />

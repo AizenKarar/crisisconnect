@@ -1,4 +1,4 @@
-// src/app/shelters/page.js
+
 'use client'
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
@@ -6,15 +6,15 @@ import DashboardLayout from '@/components/DashboardLayout'
 import toast from 'react-hot-toast'
 
 export default function SheltersPage() {
-  // Get the current logged-in user session
+
   const { data: session } = useSession()
 
-  // State variables
+
   const [shelters, setShelters] = useState([])
   const [selectedShelterId, setSelectedShelterId] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  // Check if user is staff or admin
+
   let isStaff = false
   if (session && session.user) {
     if (session.user.role === 'STAFF' || session.user.role === 'ADMIN') {
@@ -22,12 +22,12 @@ export default function SheltersPage() {
     }
   }
 
-  // Fetch shelters when page loads
+
   useEffect(function () {
     fetchShelters()
   }, [])
 
-  // Fetch all shelters from the API
+
   async function fetchShelters() {
     try {
       const response = await fetch('/api/shelters')
@@ -41,7 +41,6 @@ export default function SheltersPage() {
     setLoading(false)
   }
 
-  // Update a supply quantity for a shelter
   async function updateSupply(shelterId, supplyId, quantity) {
     try {
       const response = await fetch('/api/shelters/' + shelterId + '/supplies', {
@@ -58,7 +57,7 @@ export default function SheltersPage() {
     }
   }
 
-  // Toggle showing/hiding supply inventory for a shelter
+
   function toggleShelterDetails(shelterId) {
     if (selectedShelterId === shelterId) {
       setSelectedShelterId(null)
@@ -67,7 +66,7 @@ export default function SheltersPage() {
     }
   }
 
-  // Show loading spinner
+
   if (loading) {
     return (
       <DashboardLayout>
@@ -87,10 +86,10 @@ export default function SheltersPage() {
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {shelters.map(function (shelter) {
-            // Calculate occupancy percentage
+
             let percentage = Math.round((shelter.occupied / shelter.maxCapacity) * 100)
 
-            // Set colors based on occupancy
+
             let barColor = 'bg-teal-500'
             let statusColor = 'text-teal-600'
             if (percentage >= 90) {
@@ -101,10 +100,10 @@ export default function SheltersPage() {
               statusColor = 'text-amber-600'
             }
 
-            // Check if this shelter's details are currently shown
+
             let isSelected = (selectedShelterId === shelter.id)
 
-            // Get status badge color
+
             let statusBadge = 'bg-emerald-50 text-emerald-600 border-emerald-200'
             if (shelter.status === 'FULL') {
               statusBadge = 'bg-red-50 text-red-500 border-red-200'
@@ -112,7 +111,7 @@ export default function SheltersPage() {
               statusBadge = 'bg-slate-100 text-slate-500 border-slate-200'
             }
 
-            // Count supplies safely
+
             let supplyCount = 0
             if (shelter.supplies) {
               supplyCount = shelter.supplies.length
@@ -120,7 +119,7 @@ export default function SheltersPage() {
 
             return (
               <div key={shelter.id} className="card">
-                {/* Shelter header */}
+
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     <h2 className="font-display font-semibold text-slate-800 text-lg">{shelter.name}</h2>
@@ -130,7 +129,7 @@ export default function SheltersPage() {
                   <span className={'badge ' + statusBadge}>{shelter.status}</span>
                 </div>
 
-                {/* Occupancy bar */}
+
                 <div className="mb-5">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm text-slate-500">Occupancy</span>
@@ -143,13 +142,12 @@ export default function SheltersPage() {
                   </div>
                 </div>
 
-                {/* Supply inventory toggle */}
                 <div>
                   <button onClick={function () { toggleShelterDetails(shelter.id) }} className="text-sm text-teal-600 hover:text-teal-500 font-medium mb-3">
                     {isSelected ? 'Hide' : 'Show'} Supply Inventory ({supplyCount})
                   </button>
 
-                  {/* Supply list */}
+
                   {isSelected && shelter.supplies && (
                     <div className="space-y-3 animate-slide-down">
                       {shelter.supplies.map(function (supply) {

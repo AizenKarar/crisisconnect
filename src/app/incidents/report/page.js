@@ -1,4 +1,3 @@
-// src/app/incidents/report/page.js
 'use client'
 import { useState } from 'react'
 import { useSession } from 'next-auth/react'

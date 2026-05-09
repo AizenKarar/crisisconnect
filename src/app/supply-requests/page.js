@@ -1,4 +1,4 @@
-// src/app/supply-requests/page.js
+
 'use client'
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
@@ -6,7 +6,6 @@ import DashboardLayout from '@/components/DashboardLayout'
 import { formatDate } from '@/lib/utils'
 import toast from 'react-hot-toast'
 
-// Color maps for urgency levels
 var URG_COLORS = {
   CRITICAL: 'bg-red-50 text-red-600 border-red-200',
   HIGH: 'bg-orange-50 text-orange-600 border-orange-200',
@@ -14,7 +13,7 @@ var URG_COLORS = {
   LOW: 'bg-green-50 text-green-600 border-green-200',
 }
 
-// Color maps for status
+
 var STAT_COLORS = {
   PENDING: 'bg-slate-100 text-slate-600 border-slate-200',
   APPROVED: 'bg-blue-50 text-blue-600 border-blue-200',
@@ -23,7 +22,7 @@ var STAT_COLORS = {
   REJECTED: 'bg-red-50 text-red-500 border-red-200',
 }
 
-// Icons for each supply category
+
 var CAT_ICONS = {
   FOOD: '🍚',
   WATER: '💧',
@@ -34,17 +33,17 @@ var CAT_ICONS = {
 }
 
 export default function SupplyRequestsPage() {
-  // Get the logged-in user session
+
   const { data: session } = useSession()
 
-  // State variables
+
   const [requests, setRequests] = useState([])
   const [shelters, setShelters] = useState([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [filter, setFilter] = useState('ALL')
 
-  // Form fields
+
   const [formItemName, setFormItemName] = useState('')
   const [formCategory, setFormCategory] = useState('FOOD')
   const [formQuantity, setFormQuantity] = useState('')
@@ -54,7 +53,7 @@ export default function SupplyRequestsPage() {
   const [formFromShelterId, setFormFromShelterId] = useState('')
   const [formToShelterId, setFormToShelterId] = useState('')
 
-  // Check user roles safely
+
   let isStaff = false
   let isAdmin = false
   if (session && session.user) {
@@ -67,22 +66,22 @@ export default function SupplyRequestsPage() {
     }
   }
 
-  // Fetch data when page loads
+
   useEffect(function () {
     fetchAll()
   }, [])
 
-  // Fetch both requests and shelters
+
   async function fetchAll() {
     try {
-      // Fetch supply requests
+
       const reqResponse = await fetch('/api/supply-requests')
       if (reqResponse.ok) {
         const reqData = await reqResponse.json()
         setRequests(reqData)
       }
 
-      // Fetch shelters
+
       const shelterResponse = await fetch('/api/shelters')
       if (shelterResponse.ok) {
         const shelterData = await shelterResponse.json()
@@ -95,7 +94,7 @@ export default function SupplyRequestsPage() {
     setLoading(false)
   }
 
-  // Clear the form
+
   function clearForm() {
     setFormItemName('')
     setFormCategory('FOOD')
@@ -107,11 +106,10 @@ export default function SupplyRequestsPage() {
     setFormToShelterId('')
   }
 
-  // Submit a new supply request
+
   async function handleSubmit(event) {
     event.preventDefault()
 
-    // Validate shelters are different
     if (formFromShelterId === formToShelterId) {
       toast.error('Source and destination shelters must be different')
       return
@@ -154,7 +152,7 @@ export default function SupplyRequestsPage() {
     }
   }
 
-  // Update the status of a request (admin only)
+
   async function updateStatus(requestId, newStatus, notes) {
     try {
       let bodyData = { id: requestId, status: newStatus }
@@ -177,7 +175,7 @@ export default function SupplyRequestsPage() {
     }
   }
 
-  // Handle reject button (prompts for reason)
+
   function handleReject(requestId) {
     let reason = prompt('Reason for rejection:')
     if (reason) {
@@ -185,7 +183,7 @@ export default function SupplyRequestsPage() {
     }
   }
 
-  // Filter the requests based on selected filter
+
   let filteredRequests = []
   for (let i = 0; i < requests.length; i++) {
     if (filter === 'ALL') {
@@ -195,7 +193,6 @@ export default function SupplyRequestsPage() {
     }
   }
 
-  // Count requests by status
   let pendingCount = 0
   let approvedCount = 0
   let transitCount = 0
@@ -216,7 +213,7 @@ export default function SupplyRequestsPage() {
     }
   }
 
-  // Stats cards data
+
   let statsCards = [
     { label: 'Pending', value: pendingCount, bg: 'bg-slate-400', icon: '⏳' },
     { label: 'Approved', value: approvedCount, bg: 'bg-blue-500', icon: '✅' },
@@ -225,7 +222,7 @@ export default function SupplyRequestsPage() {
     { label: 'Rejected', value: rejectedCount, bg: 'bg-red-500', icon: '❌' },
   ]
 
-  // Pipeline steps
+
   let pipelineSteps = [
     { label: 'Pending', value: pendingCount, color: 'bg-slate-100 text-slate-600' },
     { label: 'Approved', value: approvedCount, color: 'bg-blue-100 text-blue-700' },
@@ -233,7 +230,7 @@ export default function SupplyRequestsPage() {
     { label: 'Delivered', value: deliveredCount, color: 'bg-emerald-100 text-emerald-700' },
   ]
 
-  // Filter button options
+
   let filterOptions = ['ALL', 'PENDING', 'APPROVED', 'IN_TRANSIT', 'DELIVERED', 'REJECTED']
   let categoryOptions = ['FOOD', 'WATER', 'MEDICINE', 'EQUIPMENT', 'CLOTHING', 'OTHER']
   let unitOptions = [
@@ -247,7 +244,6 @@ export default function SupplyRequestsPage() {
   ]
   let urgencyOptions = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']
 
-  // Get urgency button color
   function getUrgencyButtonColor(urgency) {
     if (urgency === 'CRITICAL') return 'bg-red-100 text-red-700 border-red-300'
     if (urgency === 'HIGH') return 'bg-orange-100 text-orange-700 border-orange-300'
@@ -270,7 +266,7 @@ export default function SupplyRequestsPage() {
           )}
         </div>
 
-        {/* Stats */}
+
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           {statsCards.map(function (stat) {
             return (
@@ -285,7 +281,7 @@ export default function SupplyRequestsPage() {
           })}
         </div>
 
-        {/* Pipeline */}
+
         <div className="card">
           <h3 className="text-sm font-semibold text-slate-500 mb-3">Supply Pipeline</h3>
           <div className="flex items-center gap-2">
@@ -303,7 +299,7 @@ export default function SupplyRequestsPage() {
           </div>
         </div>
 
-        {/* Form */}
+
         {showForm && (
           <form onSubmit={handleSubmit} className="card space-y-4 animate-slide-down border-l-4 border-l-teal-500">
             <h2 className="font-display font-semibold text-slate-800 text-lg">Request Supply Transfer</h2>
@@ -386,7 +382,7 @@ export default function SupplyRequestsPage() {
           </form>
         )}
 
-        {/* Filters */}
+
         <div className="flex gap-2 flex-wrap">
           {filterOptions.map(function (filterOption) {
             let isActive = filter === filterOption
@@ -409,7 +405,6 @@ export default function SupplyRequestsPage() {
           })}
         </div>
 
-        {/* Request cards */}
         {loading ? (
           <div className="flex justify-center py-12">
             <div className="w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
@@ -417,10 +412,9 @@ export default function SupplyRequestsPage() {
         ) : (
           <div className="space-y-4">
             {filteredRequests.map(function (req) {
-              // Get category icon
+
               let categoryIcon = CAT_ICONS[req.category] || '📦'
 
-              // Build the card border style based on urgency
               let cardClass = 'card'
               if (req.urgency === 'CRITICAL') {
                 cardClass = cardClass + ' border-l-4 border-l-red-500'
@@ -428,7 +422,7 @@ export default function SupplyRequestsPage() {
                 cardClass = cardClass + ' border-l-4 border-l-orange-500'
               }
 
-              // Get shelter names safely
+
               let fromShelterName = 'Unknown'
               let fromShelterAddress = ''
               if (req.fromShelter && req.fromShelter.name) {
@@ -443,19 +437,18 @@ export default function SupplyRequestsPage() {
                 toShelterAddress = req.toShelter.address || ''
               }
 
-              // Get requester name safely
               let requesterName = 'Unknown'
               if (req.requester && req.requester.name) {
                 requesterName = req.requester.name
               }
 
-              // Get approver name safely
+
               let approverName = ''
               if (req.approvedBy && req.approvedBy.name) {
                 approverName = req.approvedBy.name
               }
 
-              // Check if admin actions should be shown
+
               let showAdminActions = isAdmin && req.status !== 'DELIVERED' && req.status !== 'REJECTED'
 
               return (
@@ -469,7 +462,7 @@ export default function SupplyRequestsPage() {
                         <span className={'badge text-[10px] ' + STAT_COLORS[req.status]}>{req.status.replace('_', ' ')}</span>
                       </div>
 
-                      {/* Shelter transfer flow */}
+
                       <div className="flex items-center gap-2 mt-2 p-2 rounded-xl bg-white/40 border border-white/50">
                         <div className="flex-1 text-center">
                           <p className="text-[10px] text-slate-400 uppercase tracking-wider">From</p>
@@ -495,7 +488,7 @@ export default function SupplyRequestsPage() {
                         <span>{formatDate(req.createdAt)}</span>
                       </div>
 
-                      {/* Admin actions */}
+
                       {showAdminActions && (
                         <div className="flex gap-2 mt-3 pt-3 border-t border-teal-50">
                           {req.status === 'PENDING' && (

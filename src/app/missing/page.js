@@ -1,4 +1,4 @@
-// src/app/missing/page.js
+
 'use client'
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
@@ -7,17 +7,15 @@ import { formatDate } from '@/lib/utils'
 import toast from 'react-hot-toast'
 
 export default function MissingPersonsPage() {
-  // Get the current logged-in user session
   const { data: session } = useSession()
 
-  // State variables
+
   const [persons, setPersons] = useState([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [filter, setFilter] = useState('ALL')
   const [search, setSearch] = useState('')
 
-  // Form fields for reporting a missing person
   const [formName, setFormName] = useState('')
   const [formAge, setFormAge] = useState('')
   const [formGender, setFormGender] = useState('Male')
@@ -30,12 +28,11 @@ export default function MissingPersonsPage() {
   const [formLatitude, setFormLatitude] = useState('')
   const [formLongitude, setFormLongitude] = useState('')
 
-  // Fetch missing persons when page loads
+
   useEffect(function () {
     fetchPersons()
   }, [])
 
-  // Fetch all missing persons from the API
   async function fetchPersons() {
     try {
       const response = await fetch('/api/missing')
@@ -49,7 +46,6 @@ export default function MissingPersonsPage() {
     setLoading(false)
   }
 
-  // Submit a new missing person report
   async function handleSubmit(event) {
     event.preventDefault()
 
@@ -77,7 +73,6 @@ export default function MissingPersonsPage() {
       if (response.ok) {
         toast.success('Missing person report submitted!')
         setShowForm(false)
-        // Clear all form fields
         setFormName('')
         setFormAge('')
         setFormGender('Male')
@@ -104,7 +99,6 @@ export default function MissingPersonsPage() {
     }
   }
 
-  // Update a missing person's status (found, closed, etc.)
   async function updateStatus(personId, newStatus) {
     try {
       const response = await fetch('/api/missing', {
@@ -121,12 +115,12 @@ export default function MissingPersonsPage() {
     }
   }
 
-  // Filter the persons list based on status and search text
+
   let filtered = []
   for (let i = 0; i < persons.length; i++) {
     let person = persons[i]
 
-    // Check status filter
+
     let matchesFilter = false
     if (filter === 'ALL') {
       matchesFilter = true
@@ -134,7 +128,7 @@ export default function MissingPersonsPage() {
       matchesFilter = true
     }
 
-    // Check search text
+
     let matchesSearch = true
     if (search !== '') {
       let searchLower = search.toLowerCase()
@@ -149,7 +143,7 @@ export default function MissingPersonsPage() {
     }
   }
 
-  // Calculate stats
+
   let totalCount = persons.length
   let missingCount = 0
   let foundCount = 0
@@ -166,7 +160,7 @@ export default function MissingPersonsPage() {
     }
   }
 
-  // Check if the current user can update statuses
+
   let canUpdate = false
   if (session && session.user) {
     let userRole = session.user.role
@@ -175,10 +169,9 @@ export default function MissingPersonsPage() {
     }
   }
 
-  // Filter button options
   let filterOptions = ['ALL', 'MISSING', 'FOUND', 'CLOSED']
 
-  // Stats data for the cards
+
   let statsCards = [
     { label: 'Total Reports', value: totalCount, icon: '📋', bg: 'bg-teal-500' },
     { label: 'Still Missing', value: missingCount, icon: '🔍', bg: 'bg-red-500' },
@@ -189,7 +182,7 @@ export default function MissingPersonsPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        {/* Header */}
+
         <div className="flex items-center justify-between">
           <div>
             <h1 className="font-display font-bold text-2xl text-slate-800">Missing Persons</h1>
@@ -200,7 +193,7 @@ export default function MissingPersonsPage() {
           </button>
         </div>
 
-        {/* Stat cards */}
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {statsCards.map(function (stat) {
             return (
@@ -215,7 +208,7 @@ export default function MissingPersonsPage() {
           })}
         </div>
 
-        {/* Report form */}
+
         {showForm && (
           <form onSubmit={handleSubmit} className="card space-y-4 animate-slide-down border-l-4 border-l-teal-500">
             <h2 className="font-display font-semibold text-slate-800 text-lg">Report Missing Person</h2>
@@ -268,7 +261,7 @@ export default function MissingPersonsPage() {
           </form>
         )}
 
-        {/* Search and filters */}
+
         <div className="flex flex-wrap items-center gap-3">
           <input value={search} onChange={function (e) { setSearch(e.target.value) }} className="input max-w-xs" placeholder="🔍 Search by name, location..." />
           <div className="flex gap-1">
@@ -294,7 +287,7 @@ export default function MissingPersonsPage() {
           </div>
         </div>
 
-        {/* Missing persons list */}
+
         {loading ? (
           <div className="flex justify-center py-12">
             <div className="w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
@@ -302,10 +295,10 @@ export default function MissingPersonsPage() {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {filtered.map(function (person) {
-              // Calculate how many days this person has been missing
+
               let daysMissing = Math.floor((Date.now() - new Date(person.lastSeenDate)) / (1000 * 60 * 60 * 24))
 
-              // Get status badge color
+
               let statusBadgeColor = 'bg-red-50 text-red-600 border-red-200'
               if (person.status === 'FOUND') {
                 statusBadgeColor = 'bg-emerald-50 text-emerald-600 border-emerald-200'
@@ -313,7 +306,7 @@ export default function MissingPersonsPage() {
                 statusBadgeColor = 'bg-slate-100 text-slate-500 border-slate-200'
               }
 
-              // Get avatar style based on status
+
               let avatarStyle = 'bg-red-50 border border-red-200'
               let avatarIcon = '🔍'
               if (person.status === 'FOUND') {
@@ -323,10 +316,9 @@ export default function MissingPersonsPage() {
                 avatarStyle = 'bg-slate-100 border border-slate-200'
               }
 
-              // Format the last seen date nicely
               let lastSeenFormatted = new Date(person.lastSeenDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
 
-              // Get reporter name safely
+
               let reporterText = ''
               if (person.reporter && person.reporter.name) {
                 reporterText = ' by ' + person.reporter.name

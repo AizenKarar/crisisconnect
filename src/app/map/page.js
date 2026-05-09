@@ -1,33 +1,29 @@
-// src/app/map/page.js
+
 'use client'
 import { useState, useEffect } from 'react'
 import DashboardLayout from '@/components/DashboardLayout'
 import dynamic from 'next/dynamic'
 
-// Load MapView without server-side rendering (Leaflet needs the browser)
 const MapView = dynamic(function () { return import('@/components/MapView') }, { ssr: false })
 
 export default function MapPage() {
-  // State variables
   const [incidents, setIncidents] = useState([])
   const [shelters, setShelters] = useState([])
   const [selected, setSelected] = useState(null)
 
-  // Fetch incidents and shelters when page loads
+  //Fetchincidentsandshelters
   useEffect(function () {
     fetchMapData()
   }, [])
 
   async function fetchMapData() {
     try {
-      // Fetch incidents
       const incidentResponse = await fetch('/api/incidents')
       if (incidentResponse.ok) {
         const incidentData = await incidentResponse.json()
         setIncidents(incidentData)
       }
 
-      // Fetch shelters
       const shelterResponse = await fetch('/api/shelters')
       if (shelterResponse.ok) {
         const shelterData = await shelterResponse.json()
@@ -38,12 +34,10 @@ export default function MapPage() {
     }
   }
 
-  // Handle when a marker is clicked on the map
   function handleMarkerClick(incident) {
     setSelected(incident)
   }
 
-  // Close the detail panel
   function closeDetail() {
     setSelected(null)
   }

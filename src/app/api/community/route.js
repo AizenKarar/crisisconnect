@@ -29,7 +29,7 @@ export async function POST(req) {
     if (!session) return NextResponse.json({ error: 'Must be logged in' }, { status: 401 })
     const { title, content, category, commentOnPostId } = await req.json()
 
-    // If commentOnPostId, add a comment
+    //addcomment
     if (commentOnPostId) {
       const comment = await prisma.postComment.create({
         data: { content, postId: commentOnPostId, authorId: session.user.id },
@@ -38,7 +38,7 @@ export async function POST(req) {
       return NextResponse.json(comment, { status: 201 })
     }
 
-    // Otherwise create a new post
+    //createpost
     const post = await prisma.communityPost.create({
       data: { title, content, category: category || 'UPDATE', authorId: session.user.id },
       include: { author: { select: { id: true, name: true, role: true } }, comments: true },

@@ -1,4 +1,4 @@
-// src/app/community/page.js
+
 'use client'
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
@@ -6,36 +6,31 @@ import DashboardLayout from '@/components/DashboardLayout'
 import { formatDate } from '@/lib/utils'
 import toast from 'react-hot-toast'
 
-// Category icons and colors
+
 const CAT_ICONS = { UPDATE: '📢', REQUEST: '🙏', OFFER: '🤝', QUESTION: '❓', ALERT: '🚨', GRATITUDE: '💜' }
 const CAT_COLORS = { UPDATE: 'bg-blue-50 text-blue-600 border-blue-200', REQUEST: 'bg-amber-50 text-amber-600 border-amber-200', OFFER: 'bg-emerald-50 text-emerald-600 border-emerald-200', QUESTION: 'bg-purple-50 text-purple-600 border-purple-200', ALERT: 'bg-red-50 text-red-600 border-red-200', GRATITUDE: 'bg-pink-50 text-pink-600 border-pink-200' }
 const CATEGORIES = ['UPDATE', 'REQUEST', 'OFFER', 'QUESTION', 'ALERT', 'GRATITUDE']
 
 export default function CommunityPage() {
-  // Get the current logged-in user session
+  // Getuser session
   const { data: session } = useSession()
 
-  // State variables
+
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [filter, setFilter] = useState('ALL')
-
-  // Form fields for creating a new post
   const [formTitle, setFormTitle] = useState('')
   const [formContent, setFormContent] = useState('')
   const [formCategory, setFormCategory] = useState('UPDATE')
-
-  // Track comment text and visibility for each post using objects
   const [commentText, setCommentText] = useState({})
   const [showComments, setShowComments] = useState({})
 
-  // Fetch posts when page loads
+  // Fetchposts 
   useEffect(function () {
     fetchPosts()
   }, [])
 
-  // Fetch all posts from the API
   async function fetchPosts() {
     try {
       const response = await fetch('/api/community')
@@ -49,7 +44,7 @@ export default function CommunityPage() {
     setLoading(false)
   }
 
-  // Create a new post
+  // Createpost
   async function createPost(event) {
     event.preventDefault()
     let postData = { title: formTitle, content: formContent, category: formCategory }
@@ -73,7 +68,7 @@ export default function CommunityPage() {
     }
   }
 
-  // Add a comment to a post
+  // comment
   async function addComment(postId) {
     let text = commentText[postId] || ''
     if (text.trim() === '') {
@@ -87,7 +82,6 @@ export default function CommunityPage() {
         body: JSON.stringify({ commentOnPostId: postId, content: text }),
       })
       if (response.ok) {
-        // Clear the comment input for this post
         let updatedComments = { ...commentText }
         updatedComments[postId] = ''
         setCommentText(updatedComments)
@@ -98,29 +92,27 @@ export default function CommunityPage() {
     }
   }
 
-  // Update comment text for a specific post
+  // Updatecomment 
   function updateCommentText(postId, text) {
     let updated = { ...commentText }
     updated[postId] = text
     setCommentText(updated)
   }
 
-  // Toggle showing/hiding comments for a post
+  // Togglecomments
   function toggleComments(postId) {
     let updated = { ...showComments }
     updated[postId] = !updated[postId]
     setShowComments(updated)
   }
 
-  // Handle Enter key in comment input
   function handleCommentKeyDown(event, postId) {
     if (event.key === 'Enter') {
       event.preventDefault()
       addComment(postId)
     }
   }
-
-  // Filter posts by category
+  //CATEGORYFILTERKORA
   let filtered = []
   for (let i = 0; i < posts.length; i++) {
     if (filter === 'ALL' || posts[i].category === filter) {
@@ -139,7 +131,7 @@ export default function CommunityPage() {
           <button onClick={function () { setShowForm(!showForm) }} className="btn-primary">{showForm ? '✕ Close' : '+ New Post'}</button>
         </div>
 
-        {/* New post form */}
+
         {showForm && (
           <form onSubmit={createPost} className="card space-y-4 animate-slide-down border-l-4 border-l-teal-500">
             <h2 className="font-display font-semibold text-slate-800">New Post</h2>
@@ -176,7 +168,7 @@ export default function CommunityPage() {
           </form>
         )}
 
-        {/* Category filter buttons */}
+
         <div className="flex flex-wrap gap-2">
           <button onClick={function () { setFilter('ALL') }}
             className={'px-4 py-2 rounded-xl text-sm font-medium transition-all ' + (filter === 'ALL' ? 'bg-teal-100 text-teal-700 border border-teal-200 shadow-sm' : 'bg-white/50 text-slate-500 border border-white/60')}>
@@ -197,7 +189,7 @@ export default function CommunityPage() {
           })}
         </div>
 
-        {/* Posts list */}
+
         {loading ? (
           <div className="flex justify-center py-12">
             <div className="w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
@@ -205,22 +197,22 @@ export default function CommunityPage() {
         ) : (
           <div className="space-y-4">
             {filtered.map(function (post) {
-              // Get author initial safely
+
               let authorInitial = ''
               if (post.author && post.author.name && post.author.name.length > 0) {
                 authorInitial = post.author.name[0]
               }
 
-              // Get comment count
+
               let commentCount = 0
               if (post._count && post._count.comments) {
                 commentCount = post._count.comments
               }
 
-              // Check if comments are visible for this post
+
               let commentsVisible = showComments[post.id] || false
 
-              // Get pinned style
+
               let pinnedStyle = ''
               if (post.isPinned) {
                 pinnedStyle = ' border-l-4 border-l-amber-400'
