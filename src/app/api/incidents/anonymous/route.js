@@ -1,11 +1,10 @@
-// src/app/api/incidents/anonymous/route.js
+
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 
-// Simple in-memory rate limiter (IP-based)
 const rateLimitMap = new Map()
-const RATE_LIMIT = 3 // max 3 reports per hour
-const WINDOW = 60 * 60 * 1000 // 1 hour
+const RATE_LIMIT = 3
+const WINDOW = 60 * 60 * 1000
 
 function checkRateLimit(ip) {
   const now = Date.now()
